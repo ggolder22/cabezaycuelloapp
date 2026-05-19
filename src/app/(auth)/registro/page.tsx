@@ -32,38 +32,28 @@ export default function RegistroPage() {
   const onSubmit = async (data: RegistroFormData) => {
     setLoading(true)
     try {
-      // 1. Crear usuario en Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Crear usuario en Supabase Auth con metadata
+      // El trigger handle_new_user() crea automáticamente el perfil en public.usuarios
+      const { error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
+        options: {
+          data: {
+            primer_nombre: data.primer_nombre,
+            segundo_nombre: data.segundo_nombre || null,
+            primer_apellido: data.primer_apellido,
+            segundo_apellido: data.segundo_apellido || null,
+            rol: data.rol,
+          },
+        },
       })
 
       if (authError) {
-        toast.error(authError.message)
-        setLoading(false)
-        return
-      }
-
-      if (!authData.user) {
-        toast.error('Error al crear el usuario')
-        setLoading(false)
-        return
-      }
-
-      // 2. Insertar perfil en public.usuarios
-      const { error: perfilError } = await supabase.from('usuarios').insert({
-        id: authData.user.id,
-        email: data.email,
-        primer_nombre: data.primer_nombre,
-        segundo_nombre: data.segundo_nombre || null,
-        primer_apellido: data.primer_apellido,
-        segundo_apellido: data.segundo_apellido || null,
-        rol: data.rol,
-        activo: true,
-      })
-
-      if (perfilError) {
-        toast.error('Error al guardar el perfil: ' + perfilError.message)
+        if (authError.message.includes('already registered')) {
+          toast.error('Ya existe una cuenta con ese email')
+        } else {
+          toast.error('Error al crear la cuenta: ' + authError.message)
+        }
         setLoading(false)
         return
       }
