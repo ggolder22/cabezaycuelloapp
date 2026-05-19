@@ -74,7 +74,7 @@ export default async function PacienteDetallePage({ params }: Props) {
     supabase.from('pacientes').select('*').eq('id', id).single(),
     supabase
       .from('evoluciones')
-      .select('*, medico:medico_id(primer_nombre, primer_apellido, numero_matricula)')
+      .select('*, medico:medico_id(primer_nombre, primer_apellido)')
       .eq('paciente_id', id)
       .order('fecha', { ascending: false }),
   ])
@@ -217,7 +217,7 @@ export default async function PacienteDetallePage({ params }: Props) {
             ) : (
               <div className="space-y-2">
                 {evoluciones.map((ev) => {
-                  const medico = ev.medico as { primer_nombre: string; primer_apellido: string; numero_matricula?: string } | null
+                  const medico = ev.medico as { primer_nombre: string; primer_apellido: string } | null
                   const fecha = new Date(ev.fecha)
                   return (
                     <div key={ev.id} className="bg-white border rounded-xl p-4 space-y-2">
