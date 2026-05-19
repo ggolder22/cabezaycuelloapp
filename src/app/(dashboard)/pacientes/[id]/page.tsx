@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { ChevronLeft, AlertTriangle, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { ChevronLeft, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { NuevaEvolucionForm } from '@/components/pacientes/nueva-evolucion-form'
+import { EvolucionesLista } from '@/components/pacientes/evoluciones-lista'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -55,15 +56,6 @@ const ESTADO_GENERAL_COLOR: Record<string, string> = {
   conservado: 'text-green-700 bg-green-50 border-green-200',
   regular: 'text-amber-700 bg-amber-50 border-amber-200',
   comprometido: 'text-red-700 bg-red-50 border-red-200',
-}
-
-const TIPO_EVOLUCION_LABEL: Record<string, string> = {
-  nota: 'Nota de evolución',
-  consulta: 'Consulta',
-  procedimiento: 'Procedimiento',
-  orden: 'Orden médica',
-  resultado: 'Resultado / Informe',
-  interconsulta: 'Interconsulta',
 }
 
 // ─── page ───────────────────────────────────────────────────────────────────
@@ -217,30 +209,7 @@ export default async function PacienteDetallePage({ params }: Props) {
                 Sin evoluciones registradas
               </div>
             ) : (
-              <div className="space-y-2">
-                {evoluciones.map((ev) => {
-                  const fecha = new Date(ev.fecha)
-                  return (
-                    <div key={ev.id} className="bg-white border rounded-xl p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge className="bg-slate-100 text-slate-700 border-slate-200 text-xs">
-                            {TIPO_EVOLUCION_LABEL[ev.tipo] ?? ev.tipo}
-                          </Badge>
-                          {ev.diagnostico && (
-                            <span className="text-xs text-slate-500 font-mono">{ev.diagnostico}</span>
-                          )}
-                        </div>
-                        <div className="text-right text-xs text-slate-400">
-                          <p>{fecha.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })} · {fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</p>
-                          <p className="font-medium text-slate-600">Mat. {ev.numero_matricula}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-slate-700 whitespace-pre-wrap">{ev.descripcion}</p>
-                    </div>
-                  )
-                })}
-              </div>
+              <EvolucionesLista evoluciones={evoluciones} />
             )}
           </div>
         </TabsContent>
