@@ -124,6 +124,13 @@ export default function LoginPage() {
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Ingresar al sistema
                 </Button>
+
+                <p className="text-center text-sm text-slate-500">
+                  ¿No tenés cuenta?{' '}
+                  <Link href="/registro" className="font-medium hover:underline" style={{ color: 'var(--brand-red)' }}>
+                    Registrate
+                  </Link>
+                </p>
               </form>
             </CardContent>
           </Card>
