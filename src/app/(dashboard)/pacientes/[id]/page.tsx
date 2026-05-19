@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { ChevronLeft, AlertTriangle, CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -74,7 +76,7 @@ export default async function PacienteDetallePage({ params }: Props) {
     supabase.from('pacientes').select('*').eq('id', id).single(),
     supabase
       .from('evoluciones')
-      .select('*, medico:medico_id(primer_nombre, primer_apellido)')
+      .select('*')
       .eq('paciente_id', id)
       .order('fecha', { ascending: false }),
   ])
@@ -217,7 +219,6 @@ export default async function PacienteDetallePage({ params }: Props) {
             ) : (
               <div className="space-y-2">
                 {evoluciones.map((ev) => {
-                  const medico = ev.medico as { primer_nombre: string; primer_apellido: string } | null
                   const fecha = new Date(ev.fecha)
                   return (
                     <div key={ev.id} className="bg-white border rounded-xl p-4 space-y-2">
@@ -232,12 +233,7 @@ export default async function PacienteDetallePage({ params }: Props) {
                         </div>
                         <div className="text-right text-xs text-slate-400">
                           <p>{fecha.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })} · {fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</p>
-                          {medico && (
-                            <p className="font-medium text-slate-600">
-                              {medico.primer_nombre} {medico.primer_apellido}
-                              {' · '}Mat. {ev.numero_matricula}
-                            </p>
-                          )}
+                          <p className="font-medium text-slate-600">Mat. {ev.numero_matricula}</p>
                         </div>
                       </div>
                       <p className="text-sm text-slate-700 whitespace-pre-wrap">{ev.descripcion}</p>
