@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -15,7 +16,17 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, UserPlus, AlertTriangle } from 'lucide-react'
+import { Loader2, UserPlus, AlertTriangle, ExternalLink, X } from 'lucide-react'
+
+interface PacienteDuplicado {
+  id: string
+  numero_historia: string
+  primer_nombre: string
+  primer_apellido: string
+  segundo_apellido?: string | null
+  tipo_documento: string
+  numero_documento: string
+}
 
 type DerivacionTipo = 'urgente' | 'programado'
 
@@ -58,6 +69,8 @@ function CampoBooleano({
 
 export function NuevoPacienteForm() {
   const [loading, setLoading] = useState(false)
+  const [duplicado, setDuplicado] = useState<PacienteDuplicado | null>(null)
+  const [forzarIngreso, setForzarIngreso] = useState(false)
   const [derivaciones, setDerivaciones] = useState<Record<string, DerivacionState>>(
     Object.fromEntries(ESPECIALISTAS_CIRCUITO.map(e => [e.nombre, { tipo: null }]))
   )
@@ -99,7 +112,24 @@ export function NuevoPacienteForm() {
 
   const onSubmit = async (data: PacienteFormData) => {
     setLoading(true)
+    setDuplicado(null)
     try {
+      // Verificar si el paciente ya existe: mismo documento + primer nombre
+      if (!forzarIngreso) {
+        const { data: existente } = await supabase
+          .from('pacientes')
+          .select('id, numero_historia, primer_nombre, primer_apellido, segundo_apellido, tipo_documento, numero_documento')
+          .eq('numero_documento', data.numero_documento.trim())
+          .ilike('primer_nombre', data.primer_nombre.trim())
+          .maybeSingle()
+
+        if (existente) {
+          setDuplicado(existente as PacienteDuplicado)
+          setLoading(false)
+          return
+        }
+      }
+
       const { data: paciente, error } = await supabase
         .from('pacientes')
         .insert({ ...data, creado_por: usuario?.id })
@@ -124,6 +154,48 @@ export function NuevoPacienteForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
+      {/* ── ALERTA PACIENTE DUPLICADO ─────────────────────────── */}
+      {duplicado && (
+        <div className="flex items-start gap-3 rounded-xl border-2 border-amber-400 bg-amber-50 px-4 py-4">
+          <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-amber-900 text-sm">Paciente ya registrado en el sistema</p>
+            <p className="text-amber-800 text-sm mt-0.5">
+              Se encontró un paciente con el mismo documento y nombre:
+            </p>
+            <div className="mt-2 bg-white border border-amber-200 rounded-lg px-3 py-2 text-sm space-y-0.5">
+              <p className="font-semibold text-slate-900">
+                {duplicado.primer_nombre} {duplicado.primer_apellido}
+                {duplicado.segundo_apellido ? ` ${duplicado.segundo_apellido}` : ''}
+              </p>
+              <p className="text-slate-500">
+                {duplicado.tipo_documento} {duplicado.numero_documento}
+                {' · '}
+                <span className="font-mono text-blue-700">{duplicado.numero_historia}</span>
+              </p>
+            </div>
+            <div className="mt-3 flex gap-2 flex-wrap">
+              <Link
+                href={`/pacientes/${duplicado.id}`}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-white rounded-lg px-3 py-1.5 transition-colors"
+                style={{ background: 'var(--brand-red)' }}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Ver historia clínica
+              </Link>
+              <button
+                type="button"
+                onClick={() => { setForzarIngreso(true); setDuplicado(null) }}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-lg px-3 py-1.5 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+                Ignorar y registrar igual
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── SECCIÓN 1: Datos filiatorios ─────────────────────── */}
       <Card>
