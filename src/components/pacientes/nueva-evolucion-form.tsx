@@ -8,7 +8,6 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { PlusCircle, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useAuthStore } from '@/stores/auth.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -50,7 +49,6 @@ export function NuevaEvolucionForm({ pacienteId }: { pacienteId: string }) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  const { usuario } = useAuthStore()
 
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -58,12 +56,14 @@ export function NuevaEvolucionForm({ pacienteId }: { pacienteId: string }) {
   })
 
   const onSubmit = async (data: FormData) => {
-    if (!usuario) { toast.error('No hay sesión activa'); return }
     setLoading(true)
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { toast.error('No hay sesión activa'); setLoading(false); return }
+
       const { error } = await supabase.from('evoluciones').insert({
         paciente_id: pacienteId,
-        medico_id: usuario.id,
+        medico_id: user.id,
         tipo: data.tipo,
         descripcion: data.descripcion,
         diagnostico: data.diagnostico || null,
