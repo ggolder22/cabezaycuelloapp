@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROLES } from '@/config/roles'
+import type { Usuario } from '@/types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,35 +27,30 @@ const perfilSchema = z.object({
 
 type PerfilFormData = z.infer<typeof perfilSchema>
 
-export function PerfilForm() {
+interface PerfilFormProps {
+  initialData: Usuario
+}
+
+export function PerfilForm({ initialData }: PerfilFormProps) {
   const [saving, setSaving] = useState(false)
-  const { usuario, loading, setUsuario } = useAuthStore()
+  const { setUsuario } = useAuthStore()
   const supabase = createClient()
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<PerfilFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<PerfilFormData>({
     resolver: zodResolver(perfilSchema),
+    defaultValues: {
+      primer_nombre: initialData.primer_nombre,
+      segundo_nombre: initialData.segundo_nombre ?? '',
+      primer_apellido: initialData.primer_apellido,
+      segundo_apellido: initialData.segundo_apellido ?? '',
+      numero_matricula: initialData.numero_matricula ?? '',
+    },
   })
 
-  useEffect(() => {
-    if (usuario) {
-      reset({
-        primer_nombre: usuario.primer_nombre,
-        segundo_nombre: usuario.segundo_nombre ?? '',
-        primer_apellido: usuario.primer_apellido,
-        segundo_apellido: usuario.segundo_apellido ?? '',
-        numero_matricula: usuario.numero_matricula ?? '',
-      })
-    }
-  }, [usuario, reset])
-
-  const rolInfo = usuario ? ROLES[usuario.rol] : null
-
-  const iniciales = usuario
-    ? `${usuario.primer_nombre?.[0] ?? ''}${usuario.primer_apellido?.[0] ?? ''}`.toUpperCase()
-    : '?'
+  const rolInfo = ROLES[initialData.rol]
+  const iniciales = `${initialData.primer_nombre?.[0] ?? ''}${initialData.primer_apellido?.[0] ?? ''}`.toUpperCase() || '?'
 
   const onSubmit = async (data: PerfilFormData) => {
-    if (!usuario) return
     setSaving(true)
     try {
       const { error } = await supabase
@@ -66,15 +62,16 @@ export function PerfilForm() {
           segundo_apellido: data.segundo_apellido?.trim() || null,
           numero_matricula: data.numero_matricula?.trim() || null,
         })
-        .eq('id', usuario.id)
+        .eq('id', initialData.id)
 
       if (error) {
         toast.error('Error al guardar: ' + error.message)
         return
       }
 
+      // Actualizar el store para reflejar el nombre en el header
       setUsuario({
-        ...usuario,
+        ...initialData,
         primer_nombre: data.primer_nombre.trim(),
         segundo_nombre: data.segundo_nombre?.trim() || undefined,
         primer_apellido: data.primer_apellido.trim(),
@@ -88,16 +85,6 @@ export function PerfilForm() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
-      </div>
-    )
-  }
-
-  if (!usuario) return null
-
   return (
     <div className="space-y-6">
       {/* Header del perfil */}
@@ -109,17 +96,15 @@ export function PerfilForm() {
         </Avatar>
         <div>
           <h3 className="text-xl font-bold text-slate-900">
-            {usuario.primer_nombre} {usuario.primer_apellido}
+            {initialData.primer_nombre} {initialData.primer_apellido}
           </h3>
-          {rolInfo && (
-            <Badge className={`mt-1 ${rolInfo.color}`} variant="outline">
-              {rolInfo.label}
-            </Badge>
+          <Badge className={`mt-1 ${rolInfo.color}`} variant="outline">
+            {rolInfo.label}
+          </Badge>
+          {initialData.numero_matricula && (
+            <p className="text-sm text-slate-500 mt-1">Mat. {initialData.numero_matricula}</p>
           )}
-          {usuario.numero_matricula && (
-            <p className="text-sm text-slate-500 mt-1">Mat. {usuario.numero_matricula}</p>
-          )}
-          <p className="text-sm text-slate-400 mt-0.5">{usuario.email}</p>
+          <p className="text-sm text-slate-400 mt-0.5">{initialData.email}</p>
         </div>
       </div>
 
@@ -164,7 +149,7 @@ export function PerfilForm() {
               </div>
               <div className="space-y-1.5">
                 <Label>Especialidad</Label>
-                <Input value={rolInfo?.especialidad ?? ''} readOnly className="bg-slate-50 text-slate-500 cursor-not-allowed" />
+                <Input value={rolInfo.especialidad} readOnly className="bg-slate-50 text-slate-500 cursor-not-allowed" />
               </div>
             </div>
           </CardContent>
@@ -178,12 +163,12 @@ export function PerfilForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Email</Label>
-                <Input value={usuario.email} readOnly className="bg-slate-50 text-slate-500 cursor-not-allowed" />
+                <Input value={initialData.email} readOnly className="bg-slate-50 text-slate-500 cursor-not-allowed" />
               </div>
               <div className="space-y-1.5">
                 <Label>Miembro desde</Label>
                 <Input
-                  value={new Date(usuario.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  value={new Date(initialData.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}
                   readOnly
                   className="bg-slate-50 text-slate-500 cursor-not-allowed"
                 />
