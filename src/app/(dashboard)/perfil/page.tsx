@@ -1,15 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { PerfilForm } from '@/components/perfil/perfil-form'
 import type { Usuario } from '@/types'
 
 export default async function PerfilPage() {
+  // Auth: quién es el usuario logueado (usa cookies)
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: perfil } = await supabase
+  // Datos: service role bypasea RLS (solo se ejecuta server-side)
+  const service = createServiceClient()
+  const { data: perfil } = await service
     .from('usuarios')
     .select('*')
     .eq('id', user.id)
