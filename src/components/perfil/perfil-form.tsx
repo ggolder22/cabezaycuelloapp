@@ -5,8 +5,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/stores/auth.store'
+import { actualizarPerfil } from '@/app/(dashboard)/perfil/actions'
 import { ROLES } from '@/config/roles'
 import type { Usuario } from '@/types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -34,7 +34,6 @@ interface PerfilFormProps {
 export function PerfilForm({ initialData }: PerfilFormProps) {
   const [saving, setSaving] = useState(false)
   const { setUsuario } = useAuthStore()
-  const supabase = createClient()
 
   const { register, handleSubmit, formState: { errors } } = useForm<PerfilFormData>({
     resolver: zodResolver(perfilSchema),
@@ -53,23 +52,19 @@ export function PerfilForm({ initialData }: PerfilFormProps) {
   const onSubmit = async (data: PerfilFormData) => {
     setSaving(true)
     try {
-      const { error } = await supabase
-        .from('usuarios')
-        .update({
-          primer_nombre: data.primer_nombre.trim(),
-          segundo_nombre: data.segundo_nombre?.trim() || null,
-          primer_apellido: data.primer_apellido.trim(),
-          segundo_apellido: data.segundo_apellido?.trim() || null,
-          numero_matricula: data.numero_matricula?.trim() || null,
-        })
-        .eq('id', initialData.id)
+      const result = await actualizarPerfil({
+        primer_nombre: data.primer_nombre.trim(),
+        segundo_nombre: data.segundo_nombre?.trim(),
+        primer_apellido: data.primer_apellido.trim(),
+        segundo_apellido: data.segundo_apellido?.trim(),
+        numero_matricula: data.numero_matricula?.trim(),
+      })
 
-      if (error) {
-        toast.error('Error al guardar: ' + error.message)
+      if (result.error) {
+        toast.error('Error al guardar: ' + result.error)
         return
       }
 
-      // Actualizar el store para reflejar el nombre en el header
       setUsuario({
         ...initialData,
         primer_nombre: data.primer_nombre.trim(),
