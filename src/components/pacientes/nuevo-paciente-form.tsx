@@ -6,10 +6,9 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
 import { pacienteSchema, type PacienteFormData } from '@/lib/validations/paciente'
-import { useAuthStore } from '@/stores/auth.store'
 import { ESPECIALISTAS_CIRCUITO } from '@/config/roles'
+import { verificarDuplicado, crearPaciente } from '@/app/(dashboard)/pacientes/nuevo/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -74,8 +73,6 @@ export function NuevoPacienteForm() {
     Object.fromEntries(ESPECIALISTAS_CIRCUITO.map(e => [e.nombre, { tipo: null }]))
   )
   const router = useRouter()
-  const { usuario } = useAuthStore()
-  const supabase = createClient()
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<PacienteFormData>({
     resolver: zodResolver(pacienteSchema),
@@ -113,38 +110,24 @@ export function NuevoPacienteForm() {
     setLoading(true)
     setDuplicado(null)
     try {
-      // Verificar si el paciente ya existe: mismo documento + primer nombre
-      const { data: existente } = await supabase
-        .from('pacientes')
-        .select('id, numero_historia, primer_nombre, primer_apellido, segundo_apellido, tipo_documento, numero_documento')
-        .eq('numero_documento', data.numero_documento.trim())
-        .ilike('primer_nombre', data.primer_nombre.trim())
-        .maybeSingle()
-
+      const existente = await verificarDuplicado(data.numero_documento, data.primer_nombre)
       if (existente) {
         setDuplicado(existente as PacienteDuplicado)
-        setLoading(false)
         return
       }
 
-      const { data: paciente, error } = await supabase
-        .from('pacientes')
-        .insert({ ...data, creado_por: usuario?.id })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Supabase error:', error)
-        toast.error('Error: ' + error.message)
-        setLoading(false)
+      const result = await crearPaciente(data)
+      if (result.error) {
+        toast.error('Error: ' + result.error)
         return
       }
 
-      toast.success(`Paciente registrado — Historia: ${paciente.numero_historia}`)
-      router.push(`/pacientes/${paciente.id}`)
+      toast.success(`Paciente registrado — Historia: ${result.paciente!.numero_historia}`)
+      router.push(`/pacientes/${result.paciente!.id}`)
     } catch (err) {
       console.error('Excepción inesperada:', err)
       toast.error('Error inesperado al registrar el paciente')
+    } finally {
       setLoading(false)
     }
   }
