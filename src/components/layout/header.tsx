@@ -29,12 +29,12 @@ export function Header() {
 
   const iniciales = usuario
     ? `${usuario.primer_nombre?.[0] ?? ''}${usuario.primer_apellido?.[0] ?? ''}`.toUpperCase()
-    : '??'
+    : '?'
 
   const rolInfo = usuario ? ROLES[usuario.rol] : null
   const nombreCompleto = usuario
     ? `${usuario.primer_nombre} ${usuario.primer_apellido}`
-    : '...'
+    : ''
 
   return (
     <>
@@ -83,11 +83,14 @@ export function Header() {
           <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-56">
-          {/* Cabecera del menú — div simple, sin GroupLabel */}
-          <div className="px-2 py-1.5 mb-1">
-            <p className="text-sm font-semibold text-slate-900">{nombreCompleto}</p>
-            {rolInfo && <p className="text-xs text-slate-500">{rolInfo.label}</p>}
+        <DropdownMenuContent align="end" className="w-64">
+          <div className="px-3 py-2.5 mb-1">
+            <p className="text-sm font-semibold text-slate-900 leading-tight">{nombreCompleto}</p>
+            {rolInfo && <p className="text-xs text-slate-500 mt-0.5">{rolInfo.label}</p>}
+            {usuario?.numero_matricula
+              ? <p className="text-xs text-slate-400 mt-0.5">Mat. {usuario.numero_matricula}</p>
+              : <p className="text-xs text-slate-400 mt-0.5 italic">Sin matrícula cargada</p>
+            }
           </div>
 
           <DropdownMenuSeparator />

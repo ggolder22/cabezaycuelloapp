@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/hooks/use-auth'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROLES } from '@/config/roles'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -27,30 +28,37 @@ const perfilSchema = z.object({
 type PerfilFormData = z.infer<typeof perfilSchema>
 
 export function PerfilForm() {
-  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const { loading: authLoading } = useAuth()
   const { usuario, setUsuario } = useAuthStore()
   const supabase = createClient()
 
-  const { register, handleSubmit, formState: { errors } } = useForm<PerfilFormData>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<PerfilFormData>({
     resolver: zodResolver(perfilSchema),
-    defaultValues: {
-      primer_nombre: usuario?.primer_nombre ?? '',
-      segundo_nombre: usuario?.segundo_nombre ?? '',
-      primer_apellido: usuario?.primer_apellido ?? '',
-      segundo_apellido: usuario?.segundo_apellido ?? '',
-      numero_matricula: usuario?.numero_matricula ?? '',
-    },
   })
+
+  // Poblar el formulario cuando carga el usuario
+  useEffect(() => {
+    if (usuario) {
+      reset({
+        primer_nombre: usuario.primer_nombre,
+        segundo_nombre: usuario.segundo_nombre ?? '',
+        primer_apellido: usuario.primer_apellido,
+        segundo_apellido: usuario.segundo_apellido ?? '',
+        numero_matricula: usuario.numero_matricula ?? '',
+      })
+    }
+  }, [usuario, reset])
 
   const rolInfo = usuario ? ROLES[usuario.rol] : null
 
   const iniciales = usuario
     ? `${usuario.primer_nombre?.[0] ?? ''}${usuario.primer_apellido?.[0] ?? ''}`.toUpperCase()
-    : '??'
+    : '?'
 
   const onSubmit = async (data: PerfilFormData) => {
     if (!usuario) return
-    setLoading(true)
+    setSaving(true)
     try {
       const { error } = await supabase
         .from('usuarios')
@@ -79,8 +87,16 @@ export function PerfilForm() {
 
       toast.success('Perfil actualizado correctamente')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      </div>
+    )
   }
 
   if (!usuario) return null
@@ -183,8 +199,8 @@ export function PerfilForm() {
         </Card>
 
         <div className="flex justify-end pb-6">
-          <Button type="submit" disabled={loading}>
-            {loading
+          <Button type="submit" disabled={saving}>
+            {saving
               ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               : <Save className="mr-2 h-4 w-4" />
             }
