@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/hooks/use-auth'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROLES } from '@/config/roles'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -29,15 +28,13 @@ type PerfilFormData = z.infer<typeof perfilSchema>
 
 export function PerfilForm() {
   const [saving, setSaving] = useState(false)
-  const { loading: authLoading } = useAuth()
-  const { usuario, setUsuario } = useAuthStore()
+  const { usuario, loading, setUsuario } = useAuthStore()
   const supabase = createClient()
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<PerfilFormData>({
     resolver: zodResolver(perfilSchema),
   })
 
-  // Poblar el formulario cuando carga el usuario
   useEffect(() => {
     if (usuario) {
       reset({
@@ -91,7 +88,7 @@ export function PerfilForm() {
     }
   }
 
-  if (authLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center py-16">
         <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
@@ -127,7 +124,6 @@ export function PerfilForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Datos personales */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold">Datos personales</CardTitle>
@@ -156,7 +152,6 @@ export function PerfilForm() {
           </CardContent>
         </Card>
 
-        {/* Datos profesionales */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold">Datos profesionales</CardTitle>
@@ -175,7 +170,6 @@ export function PerfilForm() {
           </CardContent>
         </Card>
 
-        {/* Info de cuenta — solo lectura */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold">Información de cuenta</CardTitle>
