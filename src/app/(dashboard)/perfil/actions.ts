@@ -2,6 +2,16 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import type { Usuario } from '@/types'
+
+export async function obtenerPerfilActual(): Promise<Usuario | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const service = createServiceClient()
+  const { data } = await service.from('usuarios').select('*').eq('id', user.id).single()
+  return (data as Usuario) ?? null
+}
 
 export async function actualizarPerfil(data: {
   primer_nombre: string

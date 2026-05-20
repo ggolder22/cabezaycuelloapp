@@ -4,16 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/stores/auth.store'
-import type { Usuario } from '@/types'
-
-async function cargarPerfil(supabase: ReturnType<typeof createClient>, userId: string): Promise<Usuario | null> {
-  const { data } = await supabase
-    .from('usuarios')
-    .select('*')
-    .eq('id', userId)
-    .single()
-  return data as Usuario | null
-}
+import { obtenerPerfilActual } from '@/app/(dashboard)/perfil/actions'
 
 export function useAuth() {
   const { usuario, loading, setUsuario, setLoading } = useAuthStore()
@@ -23,26 +14,30 @@ export function useAuth() {
   useEffect(() => {
     let activo = true
 
-    // Carga inmediata al montar — no esperar al evento
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Carga inmediata al montar
+    obtenerPerfilActual().then((perfil) => {
       if (!activo) return
-      if (session?.user) {
-        const perfil = await cargarPerfil(supabase, session.user.id)
-        if (activo) setUsuario(perfil)
-      }
+      setUsuario(perfil)
+      setLoading(false)
+    }).catch(() => {
       if (activo) setLoading(false)
     })
 
-    // Escuchar cambios posteriores (login/logout/refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Escuchar cambios de sesión (login/logout/refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (!activo) return
-      if (session?.user) {
-        const perfil = await cargarPerfil(supabase, session.user.id)
-        if (activo) setUsuario(perfil)
-      } else {
-        if (activo) setUsuario(null)
+      if (event === 'SIGNED_OUT') {
+        setUsuario(null)
+        setLoading(false)
+        return
       }
-      if (activo) setLoading(false)
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        const perfil = await obtenerPerfilActual()
+        if (activo) {
+          setUsuario(perfil)
+          setLoading(false)
+        }
+      }
     })
 
     return () => {

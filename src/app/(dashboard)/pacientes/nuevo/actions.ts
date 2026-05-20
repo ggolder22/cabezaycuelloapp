@@ -3,6 +3,26 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import type { PacienteFormData } from '@/lib/validations/paciente'
+import type { Paciente } from '@/types'
+
+export async function obtenerPacientes(busqueda?: string): Promise<Paciente[]> {
+  const service = createServiceClient()
+  let query = service
+    .from('pacientes')
+    .select('*')
+    .eq('activo', true)
+    .order('created_at', { ascending: false })
+
+  if (busqueda?.trim()) {
+    const b = busqueda.trim()
+    query = query.or(
+      `primer_nombre.ilike.%${b}%,primer_apellido.ilike.%${b}%,numero_documento.ilike.%${b}%,numero_historia.ilike.%${b}%`
+    )
+  }
+
+  const { data } = await query.limit(50)
+  return (data as Paciente[]) ?? []
+}
 
 export async function verificarDuplicado(numero_documento: string, primer_nombre: string) {
   const service = createServiceClient()

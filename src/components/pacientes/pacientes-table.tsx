@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { obtenerPacientes } from '@/app/(dashboard)/pacientes/nuevo/actions'
 import type { Paciente } from '@/types'
 import { Input } from '@/components/ui/input'
 import { buttonVariants } from '@/components/ui/button'
@@ -19,25 +19,17 @@ export function PacientesTable() {
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
-  const supabase = createClient()
 
   const cargarPacientes = useCallback(async () => {
     setLoading(true)
-    let query = supabase
-      .from('pacientes')
-      .select('*')
-      .eq('activo', true)
-      .order('created_at', { ascending: false })
-
-    if (busqueda) {
-      query = query.or(
-        `primer_nombre.ilike.%${busqueda}%,primer_apellido.ilike.%${busqueda}%,numero_documento.ilike.%${busqueda}%,numero_historia.ilike.%${busqueda}%`
-      )
+    try {
+      const data = await obtenerPacientes(busqueda)
+      setPacientes(data)
+    } catch {
+      setPacientes([])
+    } finally {
+      setLoading(false)
     }
-
-    const { data } = await query.limit(50)
-    setPacientes(data ?? [])
-    setLoading(false)
   }, [busqueda])
 
   useEffect(() => {
