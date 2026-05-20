@@ -7,7 +7,7 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Clínica Cabeza y Cuello',
+  title: 'Unidad de Cabeza y Cuello',
   description: 'Sistema de gestión de pacientes - Especialidades de Cabeza y Cuello',
   icons: {
     icon: '/logo.png',
