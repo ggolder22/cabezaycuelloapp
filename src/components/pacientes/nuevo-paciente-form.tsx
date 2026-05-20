@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, UserPlus, AlertTriangle, ExternalLink, X } from 'lucide-react'
+import { Loader2, UserPlus, AlertTriangle, ExternalLink } from 'lucide-react'
 
 interface PacienteDuplicado {
   id: string
@@ -70,7 +70,6 @@ function CampoBooleano({
 export function NuevoPacienteForm() {
   const [loading, setLoading] = useState(false)
   const [duplicado, setDuplicado] = useState<PacienteDuplicado | null>(null)
-  const [forzarIngreso, setForzarIngreso] = useState(false)
   const [derivaciones, setDerivaciones] = useState<Record<string, DerivacionState>>(
     Object.fromEntries(ESPECIALISTAS_CIRCUITO.map(e => [e.nombre, { tipo: null }]))
   )
@@ -115,19 +114,17 @@ export function NuevoPacienteForm() {
     setDuplicado(null)
     try {
       // Verificar si el paciente ya existe: mismo documento + primer nombre
-      if (!forzarIngreso) {
-        const { data: existente } = await supabase
-          .from('pacientes')
-          .select('id, numero_historia, primer_nombre, primer_apellido, segundo_apellido, tipo_documento, numero_documento')
-          .eq('numero_documento', data.numero_documento.trim())
-          .ilike('primer_nombre', data.primer_nombre.trim())
-          .maybeSingle()
+      const { data: existente } = await supabase
+        .from('pacientes')
+        .select('id, numero_historia, primer_nombre, primer_apellido, segundo_apellido, tipo_documento, numero_documento')
+        .eq('numero_documento', data.numero_documento.trim())
+        .ilike('primer_nombre', data.primer_nombre.trim())
+        .maybeSingle()
 
-        if (existente) {
-          setDuplicado(existente as PacienteDuplicado)
-          setLoading(false)
-          return
-        }
+      if (existente) {
+        setDuplicado(existente as PacienteDuplicado)
+        setLoading(false)
+        return
       }
 
       const { data: paciente, error } = await supabase
@@ -184,14 +181,9 @@ export function NuevoPacienteForm() {
                 <ExternalLink className="h-3.5 w-3.5" />
                 Ver historia clínica
               </Link>
-              <button
-                type="button"
-                onClick={() => { setForzarIngreso(true); setDuplicado(null) }}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-lg px-3 py-1.5 transition-colors"
-              >
-                <X className="h-3.5 w-3.5" />
-                Ignorar y registrar igual
-              </button>
+              <p className="text-xs text-amber-700 mt-1">
+                Si creés que es un paciente diferente, verificá el número de documento ingresado.
+              </p>
             </div>
           </div>
         </div>

@@ -15,7 +15,7 @@ import { LogOut, User, ChevronDown, Menu } from 'lucide-react'
 import { useState } from 'react'
 import { Logo } from './logo'
 import { SidebarNav } from './sidebar-nav'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 export function Header() {
@@ -23,6 +23,7 @@ export function Header() {
   const { usuario } = useAuthStore()
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
@@ -91,7 +92,7 @@ export function Header() {
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/perfil')}>
             <User className="mr-2 h-4 w-4" />
             Mi perfil
           </DropdownMenuItem>

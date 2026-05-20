@@ -28,6 +28,7 @@ export interface Usuario {
   primer_apellido: string
   segundo_apellido?: string
   rol: RolUsuario
+  numero_matricula?: string
   activo: boolean
   created_at: string
   updated_at: string

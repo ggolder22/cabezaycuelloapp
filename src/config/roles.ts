@@ -89,7 +89,7 @@ export const ESPECIALISTAS_CIRCUITO = [
 export const PERMISOS = {
   pacientes: {
     ver: ['admin', 'medico_especialista', 'oncologo', 'cirujano_cabeza_cuello', 'fonoaudiologo', 'radiologo', 'patologo', 'maxilofacial', 'orl', 'endocrinologo', 'estomatologo', 'cirujano_general', 'enfermero', 'recepcionista'],
-    crear: ['admin', 'recepcionista', 'medico_especialista', 'enfermero'],
+    crear: ['admin', 'medico_especialista', 'oncologo', 'cirujano_cabeza_cuello', 'fonoaudiologo', 'radiologo', 'patologo', 'maxilofacial', 'orl', 'endocrinologo', 'estomatologo', 'cirujano_general', 'enfermero', 'recepcionista'],
     editar: ['admin', 'medico_especialista', 'recepcionista'],
     eliminar: ['admin'],
   },
