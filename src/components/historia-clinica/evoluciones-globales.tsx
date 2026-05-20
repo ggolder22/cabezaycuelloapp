@@ -85,8 +85,8 @@ export function EvolucionesGlobales({ initialData }: Props) {
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1 min-w-[160px]">
             <p className="text-xs text-slate-500 font-medium">Tipo</p>
-            <Select value={tipo} onValueChange={(v) => {
-              const val = v === 'todos' ? '' : v
+            <Select value={tipo} onValueChange={(v: string | null) => {
+              const val = !v || v === 'todos' ? '' : v
               setTipo(val)
               aplicarFiltros(val, desde, hasta)
             }}>
