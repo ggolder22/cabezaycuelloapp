@@ -14,7 +14,12 @@ export function useAuth() {
   useEffect(() => {
     let activo = true
 
-    // Carga inmediata al montar
+    // Si ya tenemos el usuario en el store, no volver a buscar
+    if (usuario !== null) {
+      setLoading(false)
+      return
+    }
+
     obtenerPerfilActual().then((perfil) => {
       if (!activo) return
       setUsuario(perfil)
@@ -23,7 +28,6 @@ export function useAuth() {
       if (activo) setLoading(false)
     })
 
-    // Escuchar cambios de sesión (login/logout/refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (!activo) return
       if (event === 'SIGNED_OUT') {

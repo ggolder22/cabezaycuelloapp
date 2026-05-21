@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { PlusCircle, Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { registrarEvolucion } from '@/app/(dashboard)/pacientes/[id]/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,7 +48,6 @@ export function NuevaEvolucionForm({ pacienteId }: { pacienteId: string }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -58,25 +57,23 @@ export function NuevaEvolucionForm({ pacienteId }: { pacienteId: string }) {
   const onSubmit = async (data: FormData) => {
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { toast.error('No hay sesión activa'); setLoading(false); return }
-
-      const { error } = await supabase.from('evoluciones').insert({
+      const result = await registrarEvolucion({
         paciente_id: pacienteId,
-        medico_id: user.id,
         tipo: data.tipo,
         descripcion: data.descripcion,
         diagnostico: data.diagnostico || null,
         numero_matricula: data.numero_matricula,
       })
-      if (error) throw error
+      if (result.error) {
+        toast.error('Error: ' + result.error)
+        return
+      }
       toast.success('Evolución registrada')
       reset()
       setOpen(false)
       router.refresh()
-    } catch (err) {
-      console.error(err)
-      toast.error('Error al guardar la evolución')
+    } catch {
+      toast.error('Error inesperado al guardar la evolución')
     } finally {
       setLoading(false)
     }

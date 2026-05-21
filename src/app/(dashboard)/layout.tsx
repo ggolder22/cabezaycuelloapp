@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { SidebarNav } from '@/components/layout/sidebar-nav'
 import { Header } from '@/components/layout/header'
 import { Logo } from '@/components/layout/logo'

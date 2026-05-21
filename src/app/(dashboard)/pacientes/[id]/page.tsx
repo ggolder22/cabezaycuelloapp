@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ChevronLeft, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import { NuevaEvolucionForm } from '@/components/pacientes/nueva-evolucion-form'
 import { EvolucionesLista } from '@/components/pacientes/evoluciones-lista'
@@ -62,11 +62,11 @@ const ESTADO_GENERAL_COLOR: Record<string, string> = {
 
 export default async function PacienteDetallePage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
+  const service = createServiceClient()
 
   const [{ data: paciente }, { data: evoluciones }] = await Promise.all([
-    supabase.from('pacientes').select('*').eq('id', id).single(),
-    supabase
+    service.from('pacientes').select('*').eq('id', id).single(),
+    service
       .from('evoluciones')
       .select('*')
       .eq('paciente_id', id)
