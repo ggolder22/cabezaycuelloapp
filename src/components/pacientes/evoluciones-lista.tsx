@@ -20,6 +20,7 @@ const TIPO_LABEL: Record<string, string> = {
   orden: 'Orden médica',
   resultado: 'Resultado / Informe',
   interconsulta: 'Interconsulta',
+  rinofibrolaringoscopia: 'RFLC',
 }
 
 const TIPO_COLOR: Record<string, string> = {
@@ -29,6 +30,7 @@ const TIPO_COLOR: Record<string, string> = {
   orden: 'bg-amber-50 text-amber-700 border-amber-200',
   resultado: 'bg-green-50 text-green-700 border-green-200',
   interconsulta: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  rinofibrolaringoscopia: 'bg-rose-50 text-rose-700 border-rose-200',
 }
 
 function EvolucionCard({ ev }: { ev: Evolucion }) {
