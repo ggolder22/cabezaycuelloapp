@@ -43,10 +43,11 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     service.from('pacientes').select('*', { count: 'exact', head: true }).eq('activo', true),
     service.from('pacientes').select('*', { count: 'exact', head: true }).eq('activo', true).gte('created_at', inicioMes),
-    service.from('evoluciones').select('*', { count: 'exact', head: true }).gte('fecha', inicioMes),
+    service.from('evoluciones').select('*, pacientes!inner(activo)', { count: 'exact', head: true }).eq('pacientes.activo', true).gte('fecha', inicioMes),
     service
       .from('evoluciones')
-      .select('id, fecha, tipo, diagnostico, numero_matricula, pacientes(id, primer_nombre, primer_apellido, numero_historia)')
+      .select('id, fecha, tipo, diagnostico, numero_matricula, pacientes!inner(id, primer_nombre, primer_apellido, numero_historia)')
+      .eq('pacientes.activo', true)
       .order('fecha', { ascending: false })
       .limit(8),
     service
