@@ -36,6 +36,21 @@ export async function verificarDuplicado(numero_documento: string, primer_nombre
   return data ?? null
 }
 
+export async function eliminarPaciente(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Verificar que sea admin
+  const service = createServiceClient()
+  const { data: perfil } = await service.from('usuarios').select('rol').eq('id', user.id).single()
+  if (perfil?.rol !== 'admin') return { error: 'Sin permisos' }
+
+  const { error } = await service.from('pacientes').update({ activo: false }).eq('id', id)
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
 export async function crearPaciente(data: PacienteFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

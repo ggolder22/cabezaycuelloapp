@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 
 const navItems = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard, modulo: null, accion: null },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, modulo: null, accion: null },
   { label: 'Pacientes', href: '/pacientes', icon: Users, modulo: 'pacientes' as const, accion: 'ver' },
   { label: 'Historia Clínica', href: '/historia-clinica', icon: FileText, modulo: 'historia_clinica' as const, accion: 'ver' },
   { label: 'Agenda', href: '/agenda', icon: Calendar, modulo: 'agenda' as const, accion: 'ver' },
