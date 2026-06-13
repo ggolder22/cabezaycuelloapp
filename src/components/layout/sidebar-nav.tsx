@@ -6,13 +6,14 @@ import { cn } from '@/lib/utils'
 import { usePermisos } from '@/hooks/use-permisos'
 import {
   Users, Calendar, FileText, ImageIcon,
-  LayoutDashboard, Shield,
+  LayoutDashboard, Shield, Stethoscope,
 } from 'lucide-react'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, modulo: null, accion: null },
   { label: 'Pacientes', href: '/pacientes', icon: Users, modulo: 'pacientes' as const, accion: 'ver' },
   { label: 'Historia Clínica', href: '/historia-clinica', icon: FileText, modulo: 'historia_clinica' as const, accion: 'ver' },
+  { label: 'Ateneo', href: '/ateneo', icon: Stethoscope, modulo: 'ateneo' as const, accion: 'ver' },
   { label: 'Agenda', href: '/agenda', icon: Calendar, modulo: 'agenda' as const, accion: 'ver' },
   { label: 'Imágenes', href: '/imagenes', icon: ImageIcon, modulo: 'imagenes' as const, accion: 'ver' },
   { label: 'Administración', href: '/admin', icon: Shield, modulo: 'admin' as const, accion: 'ver' },

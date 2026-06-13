@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, FileText, Activity, UserPlus } from 'lucide-react'
+import { Users, FileText, Activity, UserPlus, Stethoscope } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { obtenerCantidadPendientes } from '@/app/(dashboard)/ateneo/actions'
 
 const TIPO_LABEL: Record<string, string> = {
   nota: 'Nota',
@@ -40,6 +41,7 @@ export default async function DashboardPage() {
     { count: evolucionesEsteMes },
     { data: actividadReciente },
     { data: pacientesRecientes },
+    ateneoPendientes,
   ] = await Promise.all([
     service.from('pacientes').select('*', { count: 'exact', head: true }).eq('activo', true),
     service.from('pacientes').select('*', { count: 'exact', head: true }).eq('activo', true).gte('created_at', inicioMes),
@@ -56,6 +58,7 @@ export default async function DashboardPage() {
       .eq('activo', true)
       .order('created_at', { ascending: false })
       .limit(5),
+    obtenerCantidadPendientes(),
   ])
 
   const stats = [
@@ -65,6 +68,7 @@ export default async function DashboardPage() {
       icon: Users,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
+      href: '/pacientes',
     },
     {
       label: 'Nuevos este mes',
@@ -81,12 +85,13 @@ export default async function DashboardPage() {
       bg: 'bg-purple-50',
     },
     {
-      label: 'Mes actual',
-      value: format(now, 'MMMM yyyy', { locale: es }),
-      icon: FileText,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50',
-      isText: true,
+      label: 'Ateneo pendientes',
+      value: ateneoPendientes,
+      icon: Stethoscope,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+      href: '/ateneo',
+      badge: ateneoPendientes > 0,
     },
   ]
 
@@ -101,8 +106,8 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon
-          return (
-            <Card key={stat.label}>
+          const inner = (
+            <>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-slate-600">{stat.label}</CardTitle>
                 <div className={`${stat.bg} p-2 rounded-lg`}>
@@ -110,11 +115,23 @@ export default async function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className={`font-bold text-slate-900 ${stat.isText ? 'text-lg capitalize' : 'text-3xl'}`}>
-                  {stat.value}
-                </p>
+                <div className="flex items-end gap-2">
+                  <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
+                  {stat.badge && (
+                    <span className="mb-1 text-xs bg-amber-500 text-white rounded-full px-1.5 py-0.5 font-medium">
+                      pendiente{stat.value !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
               </CardContent>
-            </Card>
+            </>
+          )
+          return stat.href ? (
+            <Link key={stat.label} href={stat.href} className="hover:opacity-90 transition-opacity">
+              <Card>{inner}</Card>
+            </Link>
+          ) : (
+            <Card key={stat.label}>{inner}</Card>
           )
         })}
       </div>

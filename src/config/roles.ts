@@ -114,6 +114,11 @@ export const PERMISOS = {
     ver: ['admin'],
     gestionar: ['admin'],
   },
+  ateneo: {
+    ver: ['admin', 'medico_especialista', 'oncologo', 'cirujano_cabeza_cuello', 'fonoaudiologo', 'radiologo', 'patologo', 'maxilofacial', 'orl', 'endocrinologo', 'estomatologo', 'cirujano_general', 'enfermero'],
+    proponer: ['admin', 'medico_especialista', 'oncologo', 'cirujano_cabeza_cuello', 'fonoaudiologo', 'patologo', 'maxilofacial', 'orl', 'endocrinologo', 'estomatologo', 'cirujano_general'],
+    gestionar: ['admin', 'medico_especialista', 'oncologo', 'cirujano_cabeza_cuello'],
+  },
 } as const satisfies Record<string, Record<string, string[]>>
 
 export type Modulo = keyof typeof PERMISOS

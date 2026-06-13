@@ -8,6 +8,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import { NuevaEvolucionForm } from '@/components/pacientes/nueva-evolucion-form'
 import { EvolucionesLista } from '@/components/pacientes/evoluciones-lista'
+import { ProponerAteneoBtn } from '@/components/ateneo/proponer-ateneo-btn'
+import { tienePendiente } from '@/app/(dashboard)/ateneo/actions'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -64,13 +66,14 @@ export default async function PacienteDetallePage({ params }: Props) {
   const { id } = await params
   const service = createServiceClient()
 
-  const [{ data: paciente }, { data: evoluciones }] = await Promise.all([
+  const [{ data: paciente }, { data: evoluciones }, pendienteAteneo] = await Promise.all([
     service.from('pacientes').select('*').eq('id', id).single(),
     service
       .from('evoluciones')
       .select('*')
       .eq('paciente_id', id)
       .order('fecha', { ascending: false }),
+    tienePendiente(id),
   ])
 
   if (!paciente) notFound()
@@ -103,6 +106,9 @@ export default async function PacienteDetallePage({ params }: Props) {
             {paciente.tipo_documento} {paciente.numero_documento} · {paciente.celular}
             {paciente.eps && ` · ${paciente.eps}`}
           </p>
+        </div>
+        <div className="shrink-0">
+          <ProponerAteneoBtn pacienteId={id} yaTienePendiente={pendienteAteneo} />
         </div>
       </div>
 
