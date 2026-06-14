@@ -28,9 +28,8 @@ export async function obtenerPendientes(): Promise<AteneoItem[]> {
   const service = createServiceClient()
   const { data } = await service
     .from('ateneos')
-    .select('*, pacientes!inner(id, primer_nombre, primer_apellido, numero_historia), solicitante:usuarios!solicitado_por(primer_nombre, primer_apellido)')
+    .select('*, pacientes(id, primer_nombre, primer_apellido, numero_historia), solicitante:usuarios!solicitado_por(primer_nombre, primer_apellido)')
     .eq('estado', 'pendiente')
-    .eq('pacientes.activo', true)
     .order('fecha_solicitud', { ascending: false })
   return (data as unknown as AteneoItem[]) ?? []
 }
@@ -39,7 +38,7 @@ export async function obtenerDiscutidos(): Promise<AteneoItem[]> {
   const service = createServiceClient()
   const { data } = await service
     .from('ateneos')
-    .select('*, pacientes!inner(id, primer_nombre, primer_apellido, numero_historia), solicitante:usuarios!solicitado_por(primer_nombre, primer_apellido)')
+    .select('*, pacientes(id, primer_nombre, primer_apellido, numero_historia), solicitante:usuarios!solicitado_por(primer_nombre, primer_apellido)')
     .eq('estado', 'discutido')
     .order('fecha_discusion', { ascending: false })
     .limit(100)
