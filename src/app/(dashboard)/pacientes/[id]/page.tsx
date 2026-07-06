@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { ChevronLeft, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
+import { ChevronLeft, AlertTriangle, CheckCircle2, Clock, Pencil } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -107,7 +107,14 @@ export default async function PacienteDetallePage({ params }: Props) {
             {paciente.eps && ` · ${paciente.eps}`}
           </p>
         </div>
-        <div className="shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href={`/pacientes/${id}/editar`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 border border-slate-300 hover:bg-slate-50 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Editar
+          </Link>
           <ProponerAteneoBtn pacienteId={id} yaTienePendiente={pendienteAteneo} />
         </div>
       </div>

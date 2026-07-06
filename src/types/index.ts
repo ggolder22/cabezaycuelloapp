@@ -36,23 +36,38 @@ export interface Usuario {
 
 export interface Paciente {
   id: string
-  numero_historia: string // ID único autogenerado (ej: HCC-2026-00001)
+  numero_historia: string
   tipo_documento: 'CC' | 'CE' | 'DNI' | 'PA' | 'RC' | 'TI' | 'NIT'
   numero_documento: string
   primer_nombre: string
-  segundo_nombre?: string
+  segundo_nombre?: string | null
   primer_apellido: string
-  segundo_apellido?: string
+  segundo_apellido?: string | null
   fecha_nacimiento: string
   sexo: 'M' | 'F' | 'O'
-  telefono?: string
+  telefono?: string | null
   celular: string
-  email?: string
-  direccion?: string
-  ciudad?: string
-  departamento?: string
-  eps?: string
-  tipo_afiliacion?: 'contributivo' | 'subsidiado' | 'vinculado' | 'particular'
+  email?: string | null
+  direccion?: string | null
+  ciudad?: string | null
+  departamento?: string | null
+  eps?: string | null
+  tipo_afiliacion?: 'contributivo' | 'subsidiado' | 'vinculado' | 'particular' | null
+  tipo_derivacion: 'espontanea' | 'imagenes' | 'interconsulta' | 'urgencias'
+  motivo_consulta: string
+  antecedentes_oncologicos: boolean
+  antecedentes_oncologicos_detalle?: string | null
+  antecedentes_quirurgicos: boolean
+  antecedentes_quirurgicos_detalle?: string | null
+  comorbilidades?: string | null
+  medicacion_impacto?: string | null
+  alergias: boolean
+  alergias_detalle?: string | null
+  estado_general: 'conservado' | 'regular' | 'comprometido'
+  signos_alarma: boolean
+  signos_alarma_detalle?: string | null
+  observaciones_ingreso?: string | null
+  derivaciones?: Array<{ nombre: string; especialidad: string; tipo: 'urgente' | 'programado' }> | null
   activo: boolean
   creado_por: string
   created_at: string
